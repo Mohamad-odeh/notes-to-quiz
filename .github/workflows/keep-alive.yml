@@ -1,0 +1,20 @@
+# Calls the live app once a day so the free Supabase database stays active
+# (free Supabase projects pause after 7 days without activity).
+name: Keep alive
+
+on:
+  schedule:
+    - cron: "0 6 * * *" # every day at 06:00 UTC (09:00 in Jordan)
+  workflow_dispatch: # adds a "Run workflow" button in the Actions tab
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call /api/keep-alive
+        # The free Render server may be asleep, so allow time to wake up and retry
+        run: |
+          curl --fail --silent --show-error --max-time 120 \
+            --retry 3 --retry-delay 30 --retry-all-errors \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            "${{ vars.APP_URL }}/api/keep-alive"
