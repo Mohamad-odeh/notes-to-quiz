@@ -8,7 +8,14 @@ type QuizRow = {
   language: string;
   created_at: string;
   questions: { count: number }[];
+  attempts: { score: number; total: number }[];
 };
+
+// The best score out of all attempts, as a percentage (or null if never taken)
+function bestPercent(attempts: QuizRow["attempts"]) {
+  if (attempts.length === 0) return null;
+  return Math.max(...attempts.map((a) => Math.round((a.score / a.total) * 100)));
+}
 
 // The dashboard: only for logged-in users
 export default async function DashboardPage() {
@@ -21,7 +28,7 @@ export default async function DashboardPage() {
   // The user's quizzes, newest first. RLS makes sure these are only their own.
   const { data: quizzes } = await supabase
     .from("quizzes")
-    .select("id, title, language, created_at, questions(count)")
+    .select("id, title, language, created_at, questions(count), attempts(score, total)")
     .order("created_at", { ascending: false });
   const rows: QuizRow[] = quizzes ?? [];
 
@@ -46,22 +53,31 @@ export default async function DashboardPage() {
         </p>
       ) : (
         <ul className="mt-8 flex flex-col gap-3">
-          {rows.map((quiz) => (
-            <li key={quiz.id}>
-              <Link
-                href={`/quiz/${quiz.id}`}
-                className="block rounded-2xl border border-zinc-200 p-5 hover:border-indigo-400 dark:border-zinc-800"
-              >
-                <p dir="auto" className={`font-semibold ${quiz.language === "ar" ? "font-arabic" : ""}`}>
-                  {quiz.title}
-                </p>
-                <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-                  {quiz.questions[0]?.count ?? 0} questions ·{" "}
-                  {new Date(quiz.created_at).toLocaleDateString("en-GB")}
-                </p>
-              </Link>
-            </li>
-          ))}
+          {rows.map((quiz) => {
+            const best = bestPercent(quiz.attempts);
+            return (
+              <li key={quiz.id}>
+                <Link
+                  href={`/quiz/${quiz.id}`}
+                  className="flex items-center justify-between gap-4 rounded-2xl border border-zinc-200 p-5 hover:border-indigo-400 dark:border-zinc-800"
+                >
+                  <div>
+                    <p dir="auto" className={`font-semibold ${quiz.language === "ar" ? "font-arabic" : ""}`}>
+                      {quiz.title}
+                    </p>
+                    <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+                      {quiz.questions[0]?.count ?? 0} questions ·{" "}
+                      {new Date(quiz.created_at).toLocaleDateString("en-GB")}
+                    </p>
+                  </div>
+                  <div className="shrink-0 text-end">
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400">Best score</p>
+                    <p className="text-lg font-bold">{best === null ? "–" : `${best}%`}</p>
+                  </div>
+                </Link>
+              </li>
+            );
+          })}
         </ul>
       )}
     </section>
