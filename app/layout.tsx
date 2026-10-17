@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Geist } from "next/font/google";
+import { Geist, IBM_Plex_Sans_Arabic } from "next/font/google";
 import { createClient } from "@/lib/supabase/server";
 import { logout } from "@/app/login/actions";
 import "./globals.css";
@@ -9,6 +9,13 @@ import "./globals.css";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+});
+
+// The font for Arabic quizzes (used with the "font-arabic" class)
+const plexArabic = IBM_Plex_Sans_Arabic({
+  variable: "--font-plex-arabic",
+  subsets: ["arabic"],
+  weight: ["400", "500", "600", "700"],
 });
 
 // The title and description shown in the browser tab and in search results
@@ -27,7 +34,8 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} h-full scroll-smooth antialiased`}
+      data-scroll-behavior="smooth"
+      className={`${geistSans.variable} ${plexArabic.variable} h-full scroll-smooth antialiased`}
     >
       <body className="flex min-h-full flex-col font-sans">
         <header className="border-b border-zinc-200 dark:border-zinc-800">
@@ -38,6 +46,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
 
             {isLoggedIn ? (
               <div className="flex items-center gap-4 text-sm font-medium">
+                <Link href="/create">New quiz</Link>
                 <Link href="/dashboard">Dashboard</Link>
                 <form action={logout}>
                   <button type="submit" className="text-zinc-600 hover:underline dark:text-zinc-400">

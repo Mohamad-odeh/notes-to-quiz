@@ -41,7 +41,8 @@ export async function updateSession(request: NextRequest) {
   const isLoggedIn = Boolean(data?.claims);
   const { pathname } = request.nextUrl;
 
-  if (!isLoggedIn && !isPublic(pathname)) {
+  // API routes (/api/...) check the login themselves and reply with an error instead
+  if (!isLoggedIn && !isPublic(pathname) && !pathname.startsWith("/api/")) {
     return redirectKeepingCookies(request, response, "/login");
   }
   if (isLoggedIn && pathname === "/login") {
