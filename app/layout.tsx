@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Geist } from "next/font/google";
+import { createClient } from "@/lib/supabase/server";
+import { logout } from "@/app/login/actions";
 import "./globals.css";
 
 // The main font for English text
@@ -16,7 +18,12 @@ export const metadata: Metadata = {
 };
 
 // The layout wraps every page: header on top, the page in the middle, footer at the bottom
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  // Check if someone is logged in, to show the right links in the header
+  const supabase = await createClient();
+  const { data } = await supabase.auth.getClaims();
+  const isLoggedIn = Boolean(data?.claims);
+
   return (
     <html
       lang="en"
@@ -28,6 +35,21 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <Link href="/" className="text-lg font-bold">
               Notes to Quiz
             </Link>
+
+            {isLoggedIn ? (
+              <div className="flex items-center gap-4 text-sm font-medium">
+                <Link href="/dashboard">Dashboard</Link>
+                <form action={logout}>
+                  <button type="submit" className="text-zinc-600 hover:underline dark:text-zinc-400">
+                    Log out
+                  </button>
+                </form>
+              </div>
+            ) : (
+              <Link href="/login" className="text-sm font-medium">
+                Log in
+              </Link>
+            )}
           </nav>
         </header>
 

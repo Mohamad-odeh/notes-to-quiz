@@ -1,5 +1,7 @@
 // The landing page: the first thing visitors see at "/"
 
+import Link from "next/link";
+
 // The three "How it works" steps. Each one becomes a card below.
 const steps = [
   {
@@ -32,12 +34,20 @@ export default function Home() {
           better. Notes to Quiz writes the questions for you, so you can start
           practising in minutes.
         </p>
-        <a
-          href="#how-it-works"
-          className="mt-8 inline-block rounded-full bg-indigo-600 px-6 py-3 font-medium text-white hover:bg-indigo-700"
-        >
-          See how it works
-        </a>
+        <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <Link
+            href="/login"
+            className="rounded-full bg-indigo-600 px-6 py-3 font-medium text-white hover:bg-indigo-700"
+          >
+            Get started
+          </Link>
+          <a
+            href="#how-it-works"
+            className="rounded-full border border-zinc-300 px-6 py-3 font-medium hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-900"
+          >
+            See how it works
+          </a>
+        </div>
       </section>
 
       {/* How it works: one card per step */}
